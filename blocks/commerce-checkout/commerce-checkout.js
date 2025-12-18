@@ -47,6 +47,7 @@ import {
   renderCustomerBillingAddresses,
   renderCustomerDetails,
   renderCustomerShippingAddresses,
+  renderDiscountPromo,
   renderEmptyCart,
   renderGiftOptions,
   renderLoginForm,
@@ -127,6 +128,7 @@ export default async function decorate(block) {
   const $serverError = getElement(selectors.checkout.serverError);
   const $outOfStock = getElement(selectors.checkout.outOfStock);
   const $login = getElement(selectors.checkout.login);
+  const $discountPromo = getElement(selectors.checkout.discountPromo);
   const $shippingForm = getElement(selectors.checkout.shippingForm);
   const $billToShipping = getElement(selectors.checkout.billToShipping);
   const $delivery = getElement(selectors.checkout.delivery);
@@ -210,6 +212,7 @@ export default async function decorate(block) {
     _serverError,
     _outOfStock,
     _loginForm,
+    _discountPromo,
     shippingFormSkeleton,
     _billToShipping,
     _shippingMethods,
@@ -229,6 +232,8 @@ export default async function decorate(block) {
     renderOutOfStock($outOfStock),
 
     renderLoginForm($login),
+
+    renderDiscountPromo($discountPromo),
 
     renderShippingAddressFormSkeleton($shippingForm),
 

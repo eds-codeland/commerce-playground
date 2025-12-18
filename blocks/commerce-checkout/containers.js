@@ -308,6 +308,96 @@ export const renderLoginForm = async (container) => renderContainer(
 );
 
 /**
+ * Renders the discount/coupon section with promotional messaging
+ * Showcases checkout extensibility with custom discount UI
+ * @param {HTMLElement} container - DOM element to render the discount section in
+ * @returns {Promise<Object>} - The rendered discount component
+ */
+export const renderDiscountPromo = async (container) => renderContainer(
+  'discountPromo',
+  async () => {
+    const discountWrapper = document.createElement('div');
+    discountWrapper.className = 'checkout-discount-promo';
+    
+    const discountContent = `
+      <div class="checkout-discount-promo__inner">
+        <div class="checkout-discount-promo__header">
+          <h3 class="checkout-discount-promo__title">Have a discount code?</h3>
+          <p class="checkout-discount-promo__subtitle">Enter your code to see savings</p>
+        </div>
+        <div class="checkout-discount-promo__form">
+          <input 
+            type="text" 
+            class="checkout-discount-promo__input" 
+            placeholder="Enter discount code" 
+            id="discount-code-input"
+            aria-label="Discount code"
+          />
+          <button 
+            class="checkout-discount-promo__button" 
+            id="discount-code-apply"
+            type="button"
+          >
+            Apply
+          </button>
+        </div>
+        <div class="checkout-discount-promo__message" id="discount-message"></div>
+      </div>
+    `;
+    
+    discountWrapper.innerHTML = discountContent;
+    container.appendChild(discountWrapper);
+    
+    const applyButton = discountWrapper.querySelector('#discount-code-apply');
+    const codeInput = discountWrapper.querySelector('#discount-code-input');
+    const messageDiv = discountWrapper.querySelector('#discount-message');
+    
+    applyButton.addEventListener('click', async () => {
+      const code = codeInput.value.trim();
+      
+      if (!code) {
+        messageDiv.textContent = 'Please enter a discount code';
+        messageDiv.className = 'checkout-discount-promo__message checkout-discount-promo__message--error';
+        return;
+      }
+      
+      try {
+        applyButton.disabled = true;
+        applyButton.textContent = 'Applying...';
+ 
+        await cartApi.applyCouponsToCart(
+          [code],
+          cartApi.ApplyCouponsStrategy.REPLACE,
+        );
+        
+        messageDiv.textContent = `Discount code "${code}" applied successfully!`;
+        messageDiv.className = 'checkout-discount-promo__message checkout-discount-promo__message--success';
+        codeInput.value = '';
+        
+        setTimeout(() => {
+          messageDiv.textContent = '';
+          messageDiv.className = 'checkout-discount-promo__message';
+        }, 3000);
+      } catch (error) {
+        messageDiv.textContent = error.message || 'Invalid discount code';
+        messageDiv.className = 'checkout-discount-promo__message checkout-discount-promo__message--error';
+      } finally {
+        applyButton.disabled = false;
+        applyButton.textContent = 'Apply';
+      }
+    });
+    
+    codeInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        applyButton.click();
+      }
+    });
+    
+    return discountWrapper;
+  },
+);
+
+/**
  * Renders the shipping address form skeleton (initial placeholder)
  * @param {HTMLElement} container - DOM element to render the form in
  * @returns {Promise<Object>} - The rendered shipping address form skeleton
