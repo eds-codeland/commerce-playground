@@ -10,7 +10,7 @@ import {
  * A frozen, nested object of CSS selectors
  * @readonly
  */
-export const selectors = Object.freeze({
+ export const selectors = Object.freeze({
   checkout: {
     content: '.checkout__content',
     loader: '.checkout__loader',
@@ -20,7 +20,6 @@ export const selectors = Object.freeze({
     serverError: '.checkout__server-error',
     outOfStock: '.checkout__out-of-stock',
     login: '.checkout__login',
-    discountPromo: '.checkout__discount-promo',
     shippingForm: '.checkout__shipping-form',
     billToShipping: '.checkout__bill-to-shipping',
     delivery: '.checkout__delivery',
@@ -68,7 +67,6 @@ export function createCheckoutFragment() {
           <div class="checkout__server-error ${CHECKOUT_BLOCK}"></div>
           <div class="checkout__out-of-stock ${CHECKOUT_BLOCK}"></div>
           <div class="checkout__login ${CHECKOUT_BLOCK}"></div>
-          <div class="checkout__discount-promo ${CHECKOUT_BLOCK}"></div>
           <div class="checkout__shipping-form ${CHECKOUT_BLOCK}"></div>
           <div class="checkout__bill-to-shipping ${CHECKOUT_BLOCK}"></div>
           <div class="checkout__delivery ${CHECKOUT_BLOCK}"></div>

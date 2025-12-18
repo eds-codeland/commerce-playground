@@ -49,14 +49,17 @@ export default async function decorate(block) {
   block.appendChild(fragment);
 
   // Add category url path to block for enrichment
-  if (config.urlpath) {
+  if (config.urlpath && config.urlpath !== 'default') {
     block.dataset.category = config.urlpath;
-  } else if (window.location.pathname.startsWith('/categories/')) {
+  } else if (
+    window.location.pathname.startsWith('/categories/')
+    && !window.location.pathname.startsWith('/categories/default')
+  ) {
     const str = window.location.pathname;
     const needle = '/categories/';
     const start = str.indexOf(needle);
     const result = start === -1 ? '' : str.slice(start + needle.length);
-    block.dataset.category = result;
+    if (result && result !== 'default') block.dataset.category = result;
   }
 
   // Get variables from the URL
@@ -70,7 +73,9 @@ export default async function decorate(block) {
   } = Object.fromEntries(urlParams.entries());
 
   // Request search based on page type on block load
-  const category = config.urlpath || block.dataset.category;
+  const category = (config.urlpath && config.urlpath !== 'default')
+    ? config.urlpath
+    : block.dataset.category;
   if (category) {
     // If it's a category page...
     await search({

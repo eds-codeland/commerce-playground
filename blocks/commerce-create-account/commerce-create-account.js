@@ -15,7 +15,10 @@ export default async function decorate(block) {
   if (checkIsAuthenticated()) {
     window.location.href = rootLink(CUSTOMER_ACCOUNT_PATH);
   } else {
+    const urlParams = new URLSearchParams(window.location.search);
+    const apiVersion2 = urlParams.get('v2') === '1';
     await authRenderer.render(SignUp, {
+      apiVersion2,
       hideCloseBtnOnEmailConfirmation: true,
       routeSignIn: () => rootLink(CUSTOMER_LOGIN_PATH),
       routeRedirectOnSignIn: () => rootLink(CUSTOMER_ACCOUNT_PATH),

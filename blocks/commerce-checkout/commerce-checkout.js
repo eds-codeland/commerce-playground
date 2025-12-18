@@ -47,7 +47,6 @@ import {
   renderCustomerBillingAddresses,
   renderCustomerDetails,
   renderCustomerShippingAddresses,
-  renderDiscountPromo,
   renderEmptyCart,
   renderGiftOptions,
   renderLoginForm,
@@ -128,7 +127,6 @@ export default async function decorate(block) {
   const $serverError = getElement(selectors.checkout.serverError);
   const $outOfStock = getElement(selectors.checkout.outOfStock);
   const $login = getElement(selectors.checkout.login);
-  const $discountPromo = getElement(selectors.checkout.discountPromo);
   const $shippingForm = getElement(selectors.checkout.shippingForm);
   const $billToShipping = getElement(selectors.checkout.billToShipping);
   const $delivery = getElement(selectors.checkout.delivery);
@@ -146,6 +144,51 @@ export default async function decorate(block) {
   const handleValidation = () => {
     let success = true;
 
+    const validateVatNumber = (formName) => {
+      const form = document.forms[formName];
+      if (!form) return true;
+
+      const EU_COUNTRY_CODES = new Set([
+        'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR', 'HU', 'IE', 'IT',
+        'LT', 'LU', 'LV', 'MT', 'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK',
+      ]);
+
+      const countryInput = form.querySelector(
+        'select[name="countryCode"], select[name="country_code"], input[name="countryCode"], input[name="country_code"]',
+      );
+      const countryCode = `${countryInput?.value || ''}`.trim().toUpperCase();
+      const isEuOrIt = EU_COUNTRY_CODES.has(countryCode);
+
+      const vatInput = form.querySelector(
+        'input[name="vat_id"], input[name="vatId"], input[name*="vat"], input[id*="vat"], input[autocomplete="tax-id"]',
+      );
+
+      if (!vatInput) return true;
+
+      const rawValue = `${vatInput.value || ''}`.trim();
+
+      if (!rawValue && !isEuOrIt) {
+        vatInput.setCustomValidity('');
+        return true;
+      }
+
+      if (!rawValue) {
+        vatInput.setCustomValidity('VAT number is required for IT/EU addresses.');
+        vatInput.reportValidity();
+        return false;
+      }
+
+      const digitsOnly = rawValue.replace(/\D/g, '');
+      if (digitsOnly.length !== 10 || digitsOnly !== rawValue) {
+        vatInput.setCustomValidity('VAT number must be exactly 10 numbers.');
+        vatInput.reportValidity();
+        return false;
+      }
+
+      vatInput.setCustomValidity('');
+      return true;
+    };
+
     // Login form validation - skip for authenticated users
     const loginForm = document.forms[LOGIN_FORM_NAME];
     const isLoginFormVisible = loginForm && loginForm.offsetParent !== null;
@@ -158,12 +201,14 @@ export default async function decorate(block) {
     // Shipping form validation
     if (success && shippingFormRef.current) {
       success = validateForm(SHIPPING_FORM_NAME, shippingFormRef);
+      if (success) success = validateVatNumber(SHIPPING_FORM_NAME);
       if (!success) scrollToElement($shippingForm);
     }
 
     // Billing form validation
     if (success && billingFormRef.current) {
       success = validateForm(BILLING_FORM_NAME, billingFormRef);
+      if (success) success = validateVatNumber(BILLING_FORM_NAME);
       if (!success) scrollToElement($billingForm);
     }
 
@@ -212,7 +257,6 @@ export default async function decorate(block) {
     _serverError,
     _outOfStock,
     _loginForm,
-    _discountPromo,
     shippingFormSkeleton,
     _billToShipping,
     _shippingMethods,
@@ -232,8 +276,6 @@ export default async function decorate(block) {
     renderOutOfStock($outOfStock),
 
     renderLoginForm($login),
-
-    renderDiscountPromo($discountPromo),
 
     renderShippingAddressFormSkeleton($shippingForm),
 

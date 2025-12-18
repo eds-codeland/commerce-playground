@@ -195,102 +195,45 @@
     margin: var(--spacing-small) 0;
 }
 
-/* Discount/Coupon Promo Section */
-.checkout-discount-promo {
-    background-color: var(--color-neutral-100);
-    border: 1px solid var(--color-neutral-300);
-    border-radius: 4px;
-    padding: var(--spacing-medium);
-    margin-bottom: var(--spacing-medium);
-}
-
-.checkout-discount-promo__inner {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-small);
-}
-
-.checkout-discount-promo__header {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xsmall);
-}
-
-.checkout-discount-promo__title {
-    font: var(--type-body-1-strong-font);
-    letter-spacing: var(--type-body-1-strong-letter-spacing);
-    color: var(--color-neutral-800);
-    margin: 0;
-}
-
-.checkout-discount-promo__subtitle {
+.checkout-credit-card-placeholder {
     font: var(--type-body-2-default-font);
     letter-spacing: var(--type-body-2-default-letter-spacing);
-    color: var(--color-neutral-600);
-    margin: 0;
+    color: var(--color-neutral-700);
+    padding-top: var(--spacing-small);
 }
 
-.checkout-discount-promo__form {
-    display: flex;
-    gap: var(--spacing-small);
+.checkout-credit-card-dialog {
+    width: min(900px, 92vw);
+    max-width: 92vw;
+    border: var(--shape-border-width-1) solid var(--color-neutral-400);
+    border-radius: var(--shape-border-radius-2);
+    padding: 0;
+    overflow: hidden;
 }
 
-.checkout-discount-promo__input {
-    flex: 1;
-    padding: var(--spacing-small) var(--spacing-medium);
-    border: 1px solid var(--color-neutral-400);
-    border-radius: 4px;
-    font: var(--type-body-2-default-font);
-    letter-spacing: var(--type-body-2-default-letter-spacing);
+.checkout-credit-card-dialog::backdrop {
+    background-color: rgb(0 0 0 / 50%);
+}
+
+.checkout-credit-card-dialog__content {
+    box-sizing: border-box;
+    padding: 24px 56px 24px 24px;
+    overflow: auto;
+    max-height: calc(100dvh - 120px);
+}
+
+.checkout-credit-card-dialog__close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    background: transparent;
     color: var(--color-neutral-800);
-}
-
-.checkout-discount-promo__input::placeholder {
-    color: var(--color-neutral-500);
-}
-
-.checkout-discount-promo__input:focus {
-    outline: none;
-    border-color: var(--color-brand-500);
-    box-shadow: 0 0 0 2px rgb(var(--color-brand-500) / 0.1);
-}
-
-.checkout-discount-promo__button {
-    padding: var(--spacing-small) var(--spacing-medium);
-    background-color: var(--color-brand-500);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font: var(--type-body-2-strong-font);
-    letter-spacing: var(--type-body-2-strong-letter-spacing);
+    font-size: 28px;
+    line-height: 1;
     cursor: pointer;
-    transition: background-color 0.2s ease;
-    white-space: nowrap;
-}
-
-.checkout-discount-promo__button:hover:not(:disabled) {
-    background-color: var(--color-brand-600);
-}
-
-.checkout-discount-promo__button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.checkout-discount-promo__message {
-    font: var(--type-body-2-default-font);
-    letter-spacing: var(--type-body-2-default-letter-spacing);
-    min-height: 20px;
-    display: flex;
-    align-items: center;
-}
-
-.checkout-discount-promo__message--success {
-    color: var(--color-success-500);
-}
-
-.checkout-discount-promo__message--error {
-    color: var(--color-error-500);
 }
 
 /* Sign-in modal */
@@ -326,6 +269,24 @@
 .checkout__billing-form .dropin-header-container .dropin-divider {
     display: none;
 }
+
+ .checkout-vat-required > label::after,
+ .checkout-vat-required label:first-child::after {
+     content: ' *';
+ }
+
+ [data-vat-required="true"] .dropin-field__label::after,
+ [data-vat-required="true"] label::after {
+     content: ' *';
+ }
+
+ .checkout-vat-inline-error {
+     margin-top: var(--spacing-xsmall);
+     color: var(--color-negative-700);
+     font: var(--type-details-caption-2-font);
+     letter-spacing: var(--type-details-caption-2-letter-spacing);
+     display: none;
+ }
 
 /* Order confirmation */
 .order-confirmation {
