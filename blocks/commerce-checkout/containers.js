@@ -386,11 +386,51 @@ export const renderPaymentMethods = async (container, creditCardFormRef) => rend
     const commerceCoreEndpoint = getConfigValue('commerce-core-endpoint') || getConfigValue('commerce-endpoint');
     const getUserTokenCookie = () => getCookie(USER_TOKEN_COOKIE_NAME);
 
+    let creditCardDialog;
+    let creditCardDialogContent;
+
+    const ensureCreditCardDialog = () => {
+      if (creditCardDialog) return;
+
+      creditCardDialog = document.createElement('dialog');
+      creditCardDialog.className = 'checkout-credit-card-dialog';
+
+      creditCardDialogContent = document.createElement('div');
+      creditCardDialogContent.className = 'checkout-credit-card-dialog__content';
+      creditCardDialog.append(creditCardDialogContent);
+
+      const closeButton = document.createElement('button');
+      closeButton.type = 'button';
+      closeButton.className = 'checkout-credit-card-dialog__close';
+      closeButton.setAttribute('aria-label', 'Close');
+      closeButton.textContent = '×';
+      closeButton.addEventListener('click', () => creditCardDialog?.close());
+      creditCardDialog.append(closeButton);
+
+      // Close on backdrop click
+      creditCardDialog.addEventListener('click', (event) => {
+        if (event.pointerType !== 'mouse') return;
+        const rect = creditCardDialog.getBoundingClientRect();
+        if (
+          event.clientX < rect.left
+          || event.clientX > rect.right
+          || event.clientY < rect.top
+          || event.clientY > rect.bottom
+        ) {
+          creditCardDialog.close();
+        }
+      });
+
+      document.body.append(creditCardDialog);
+    };
+
     return CheckoutProvider.render(PaymentMethods, {
       slots: {
         Methods: {
           [PaymentMethodCode.CREDIT_CARD]: {
             render: (ctx) => {
+              ensureCreditCardDialog();
+
               const $creditCard = document.createElement('div');
 
               PaymentServices.render(CreditCard, {
@@ -400,7 +440,19 @@ export const renderPaymentMethods = async (container, creditCardFormRef) => rend
                 creditCardFormRef,
               })($creditCard);
 
-              ctx.replaceHTML($creditCard);
+              // Render a placeholder in the inline payment methods area.
+              const placeholder = document.createElement('div');
+              placeholder.className = 'checkout-credit-card-placeholder';
+              placeholder.textContent = 'Credit card details open in a modal.';
+              ctx.replaceHTML(placeholder);
+
+              // Mount the actual credit card form in the modal.
+              creditCardDialogContent.replaceChildren($creditCard);
+
+              // Open the modal (only if not already open).
+              if (!creditCardDialog.open) {
+                creditCardDialog.showModal();
+              }
             },
           },
           [PaymentMethodCode.SMART_BUTTONS]: {
@@ -795,6 +847,114 @@ export const renderAddressForm = async (container, formRef, data, placeOrderButt
         ? transformCartAddressToFormValues(cartAddress)
         : { countryCode: storeConfig.defaultCountry };
 
+      const EU_COUNTRY_CODES = new Set([
+        'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR', 'HU', 'IE', 'IT',
+        'LT', 'LU', 'LV', 'MT', 'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK',
+      ]);
+
+      let vatWasRequired = false;
+
+      const applyVatRules = (values = {}) => {
+        const form = formRef?.current;
+        if (!form || typeof form.querySelector !== 'function') return;
+
+        const fromValues = `${values?.countryCode || values?.country_code || ''}`.trim().toUpperCase();
+        const fromDom = `${form.querySelector('select[name="countryCode"], select[name="country_code"], input[name="countryCode"], input[name="country_code"]')?.value || ''}`.trim().toUpperCase();
+        const countryCode = fromValues || fromDom;
+        const vatInput = form.querySelector(
+          'input[name="vatId"], input[name="vat_id"], input[name*="vat"], input[id*="vat"], input[autocomplete="tax-id"]',
+        );
+
+        if (!vatInput) return true;
+
+        const isEuOrIt = EU_COUNTRY_CODES.has(countryCode);
+        const rawValue = `${vatInput.value || ''}`.trim();
+        const digitsOnly = rawValue.replace(/\D/g, '');
+
+        vatInput.required = isEuOrIt;
+
+        const findVatFieldWrapper = () => {
+          // Walk up from the input until we find a wrapper that actually contains the label element.
+          // Drop-in markup differs between versions, so we look for either `.dropin-field__label` or `label`.
+          let el = vatInput;
+          for (let i = 0; i < 10 && el; i += 1) {
+            if (el.querySelector?.('.dropin-field__label, label')) return el;
+            el = el.parentElement;
+          }
+          return vatInput.parentElement;
+        };
+
+        const vatFieldWrapper = findVatFieldWrapper();
+
+        if (vatFieldWrapper && vatFieldWrapper.classList) {
+          vatFieldWrapper.classList.toggle('checkout-vat-required', isEuOrIt);
+          vatFieldWrapper.setAttribute('data-vat-required', isEuOrIt ? 'true' : 'false');
+        }
+
+        // Add/remove a visible required star next to the VAT label.
+        // CSS selectors can miss due to drop-in markup differences, so we inject a small marker.
+        const labelCandidates = vatFieldWrapper?.querySelectorAll?.(
+          '.dropin-field__label, label, [data-testid*="label"], [class*="label"], [class*="Label"]',
+        );
+
+        let vatLabelEl = null;
+        if (labelCandidates && labelCandidates.length) {
+          vatLabelEl = Array.from(labelCandidates).find((el) => {
+            const txt = (el.textContent || '').trim().toLowerCase();
+            return txt === 'vat number' || txt.includes('vat number');
+          }) || labelCandidates[0];
+        }
+
+        if (vatLabelEl) {
+          const existing = vatLabelEl.querySelector('[data-vat-required-star="true"]');
+          if (isEuOrIt && !existing) {
+            const star = document.createElement('span');
+            star.setAttribute('data-vat-required-star', 'true');
+            star.textContent = ' *';
+            vatLabelEl.appendChild(star);
+          }
+          if (!isEuOrIt && existing) {
+            existing.remove();
+          }
+        }
+
+        // Inline error element (more visible than reportValidity tooltips)
+        let inlineErrorEl = vatFieldWrapper?.querySelector?.('.checkout-vat-inline-error');
+        if (!inlineErrorEl && vatFieldWrapper) {
+          inlineErrorEl = document.createElement('div');
+          inlineErrorEl.className = 'checkout-vat-inline-error';
+          vatFieldWrapper.appendChild(inlineErrorEl);
+        }
+
+        const setInlineError = (msg) => {
+          if (inlineErrorEl) {
+            inlineErrorEl.textContent = msg || '';
+            inlineErrorEl.style.display = msg ? 'block' : 'none';
+          }
+        };
+
+        if (!rawValue) {
+          vatInput.setCustomValidity(isEuOrIt ? 'VAT number is required for IT/EU addresses.' : '');
+          setInlineError(isEuOrIt ? 'VAT number is required for IT/EU addresses.' : '');
+          if (isEuOrIt && !vatWasRequired) vatInput.reportValidity();
+          vatWasRequired = isEuOrIt;
+          return !isEuOrIt;
+        }
+
+        if (digitsOnly.length !== 10 || digitsOnly !== rawValue) {
+          vatInput.setCustomValidity('VAT number must be exactly 10 numbers.');
+          setInlineError('VAT number must be exactly 10 numbers.');
+          vatInput.reportValidity();
+          vatWasRequired = isEuOrIt;
+          return false;
+        }
+
+        vatInput.setCustomValidity('');
+        setInlineError('');
+        vatWasRequired = isEuOrIt;
+        return true;
+      };
+
       return AccountProvider.render(AddressForm, {
         addressesFormTitle: addressTitle,
         className,
@@ -804,9 +964,15 @@ export const renderAddressForm = async (container, formRef, data, placeOrderButt
         hideActionFormButtons: true,
         inputsDefaultValueSet,
         isOpen: true,
+        handleRenderForm: () => {
+          // Ensure VAT rules apply even when the form loads with a pre-selected country.
+          setTimeout(() => applyVatRules(inputsDefaultValueSet), 0);
+        },
         onChange: (values) => {
+          const vatOk = applyVatRules(values);
+
           const canSetAddressOnCart = !isFirstRender || !hasCartAddress;
-          if (canSetAddressOnCart) setAddressOnCartFn(values);
+          if (canSetAddressOnCart && vatOk) setAddressOnCartFn(values);
 
           // Only estimate shipping cost for shipping addresses when no cart address exists
           if (isShipping && !hasCartAddress && estimateShippingCostOnCart) {

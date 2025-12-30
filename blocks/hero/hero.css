@@ -1,14 +1,16 @@
+/* Container reset */
 .hero-container .hero-wrapper {
   max-width: unset;
   padding: 0;
 }
 
+/* Base hero block */
 .hero {
   position: relative;
-  padding: 40px 24px;
-  min-height: 300px;
+  padding: 0;
 }
 
+/* Single-image legacy hero styles */
 .hero h1 {
   max-width: 1200px;
   margin-left: auto;
@@ -30,8 +32,252 @@
   height: 100%;
 }
 
-@media (min-width: 900px) {
-  .hero {
-    padding: 40px 32px;
+/* Multi-slide hero (carousel-like) */
+.hero .carousel-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero .hero-slides,
+.hero .tns-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hero .hero-slides {
+  position: relative;
+  overflow: hidden;
+  height: 40vw; /* responsive height similar to reference without vh */
+}
+
+.hero .hero-slides::-webkit-scrollbar { display: none; }
+
+.hero .hero-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  min-height: 420px; /* safe minimum height */
+}
+
+.hero .hero-slide[aria-hidden="false"] {
+  display: flex;
+}
+
+/* Card structure (Acerbis-like) */
+.hero .hero-slide .card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.hero .hero-slide .card-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero .hero-slide .card-bg.is-mobile {
+  display: none;
+}
+
+/* Bootstrap-ish helpers used in reference */
+.hero .hidden-xs,
+.hero .hidden-sm {
+  display: block;
+}
+
+.hero .visible-xs,
+.hero .visible-sm {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .hero .hidden-xs,
+  .hero .hidden-sm {
+    display: none;
+  }
+
+  .hero .visible-xs,
+  .hero .visible-sm {
+    display: block;
+  }
+
+  .hero .hero-slide .card-bg.is-mobile {
+    display: block;
+  }
+}
+
+.hero .hero-slide .card-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: end center;
+  padding-bottom: 0;
+  z-index: 1;
+}
+
+/* Subtle readability overlay similar to reference */
+.hero .hero-slide .card-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 55%,
+    rgb(0 0 0 / 35%) 0%,
+    rgb(0 0 0 / 18%) 35%,
+    rgb(0 0 0 / 0%) 70%
+  );
+  z-index: -1;
+}
+
+.hero .hero-slide .card-body {
+  width: 100%;
+  position: absolute;
+  bottom: 72px;
+  top: auto;
+  transform: none;
+  left: 0;
+  right: 0;
+}
+
+.hero .hero-slide .text-center {
+  text-align: center;
+}
+
+/* CTA button style (white) */
+.hero .btn.btn-white {
+  display: inline-block;
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-900);
+  padding: 14px 28px;
+  border-radius: 9999px;
+  font: var(--type-button-2-font);
+  letter-spacing: var(--type-button-2-letter-spacing);
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 22%);
+}
+
+/* Make CTA text closer to reference sizing */
+.hero .btn.btn-white {
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.hero a.btn.btn-white:hover,
+.hero a.btn.btn-white:focus-visible {
+  background: var(--color-neutral-200);
+  text-decoration: none;
+}
+
+.hero .tns-nav {
+  position: absolute;
+  bottom: 50px;
+  text-align: center;
+  font-size: .25em;
+  font-weight: bold;
+  color: transparent;
+  z-index: 2;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
+  display: flex;
+  padding: 0;
+  line-height: 0;
+}
+
+.hero .tns-nav button {
+  text-indent: -9999px;
+  width: 12px;
+  height: 12px;
+  outline: 0;
+  border: 1px solid rgb(255 255 255 / 70%);
+  border-radius: 50%;
+  text-decoration: none;
+  background-color: transparent;
+  margin: 0 7px;
+  padding: 0;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.hero .tns-nav button:disabled,
+.hero .tns-nav button.tns-nav-active,
+.hero .tns-nav button:hover,
+.hero .tns-nav button:focus-visible {
+  background-color: var(--color-neutral-50);
+  border-color: var(--color-neutral-50);
+}
+
+@media (max-width: 600px) {
+  .hero .hero-slide .card-overlay {
+    padding-bottom: 56px;
+  }
+
+  .hero .hero-slide .card-body {
+    bottom: 66px;
+  }
+}
+
+/* Prev/Next buttons overlay */
+.hero .carousel-controls {
+  position: absolute;
+  top: 50%;
+  left: 24px;
+  right: 24px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 2;
+}
+
+/* Reference site rotates automatically; hide arrows */
+.hero .carousel-controls {
+  display: none;
+}
+
+.hero .carousel-controls .prev,
+.hero .carousel-controls .next {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgb(0 0 0 / 30%);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.hero .carousel-controls .prev:hover,
+.hero .carousel-controls .next:hover { background-color: rgb(0 0 0 / 45%); }
+
+/* Minimal arrow icon using CSS (if you later replace with SVG, keep class names) */
+.hero .icon-carousel-left::before,
+.hero .icon-carousel-right::before {
+  content: '';
+  display: block;
+  border-bottom: 0;
+  border-left: 0;
+  height: 14px;
+  width: 14px;
+  border-top: 2.5px solid var(--color-neutral-50);
+  border-right: 2.5px solid var(--color-neutral-50);
+  transform: rotate(-135deg);
+}
+
+.hero .icon-carousel-right::before {
+  transform: rotate(45deg);
+}
+
+@media (min-width: 600px) {
+  .hero .carousel-controls {
+    left: 24px;
+    right: 24px;
   }
 }

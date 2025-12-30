@@ -195,6 +195,47 @@
     margin: var(--spacing-small) 0;
 }
 
+.checkout-credit-card-placeholder {
+    font: var(--type-body-2-default-font);
+    letter-spacing: var(--type-body-2-default-letter-spacing);
+    color: var(--color-neutral-700);
+    padding-top: var(--spacing-small);
+}
+
+.checkout-credit-card-dialog {
+    width: min(900px, 92vw);
+    max-width: 92vw;
+    border: var(--shape-border-width-1) solid var(--color-neutral-400);
+    border-radius: var(--shape-border-radius-2);
+    padding: 0;
+    overflow: hidden;
+}
+
+.checkout-credit-card-dialog::backdrop {
+    background-color: rgb(0 0 0 / 50%);
+}
+
+.checkout-credit-card-dialog__content {
+    box-sizing: border-box;
+    padding: 24px 56px 24px 24px;
+    overflow: auto;
+    max-height: calc(100dvh - 120px);
+}
+
+.checkout-credit-card-dialog__close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    background: transparent;
+    color: var(--color-neutral-800);
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+}
+
 /* Sign-in modal */
 #modal {
     position: fixed;
@@ -228,6 +269,24 @@
 .checkout__billing-form .dropin-header-container .dropin-divider {
     display: none;
 }
+
+ .checkout-vat-required > label::after,
+ .checkout-vat-required label:first-child::after {
+     content: ' *';
+ }
+
+ [data-vat-required="true"] .dropin-field__label::after,
+ [data-vat-required="true"] label::after {
+     content: ' *';
+ }
+
+ .checkout-vat-inline-error {
+     margin-top: var(--spacing-xsmall);
+     color: var(--color-negative-700);
+     font: var(--type-details-caption-2-font);
+     letter-spacing: var(--type-details-caption-2-letter-spacing);
+     display: none;
+ }
 
 /* Order confirmation */
 .order-confirmation {

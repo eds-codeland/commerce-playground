@@ -49,8 +49,17 @@ export default async function decorate(block) {
   block.appendChild(fragment);
 
   // Add category url path to block for enrichment
-  if (config.urlpath) {
+  if (config.urlpath && config.urlpath !== 'default') {
     block.dataset.category = config.urlpath;
+  } else if (
+    window.location.pathname.startsWith('/categories/')
+    && !window.location.pathname.startsWith('/categories/default')
+  ) {
+    const str = window.location.pathname;
+    const needle = '/categories/';
+    const start = str.indexOf(needle);
+    const result = start === -1 ? '' : str.slice(start + needle.length);
+    if (result && result !== 'default') block.dataset.category = result;
   }
 
   // Get variables from the URL
@@ -63,16 +72,19 @@ export default async function decorate(block) {
     filter,
   } = Object.fromEntries(urlParams.entries());
 
-  // Request search based on the page type on block load
-  if (config.urlpath) {
+  // Request search based on page type on block load
+  const category = (config.urlpath && config.urlpath !== 'default')
+    ? config.urlpath
+    : block.dataset.category;
+  if (category) {
     // If it's a category page...
     await search({
-      phrase: '', // search all products in the category
+      phrase: '', // search all products in category
       currentPage: page ? Number(page) : 1,
       pageSize: 8,
       sort: sort ? getSortFromParams(sort) : [{ attribute: 'position', direction: 'DESC' }],
       filter: [
-        { attribute: 'categoryPath', eq: config.urlpath }, // Add category filter
+        { attribute: 'categoryPath', eq: category }, // Add category filter
         { attribute: 'visibility', in: ['Search', 'Catalog, Search'] },
         ...getFilterFromParams(filter),
       ],
