@@ -10,7 +10,7 @@ import {
  * A frozen, nested object of CSS selectors
  * @readonly
  */
-export const selectors = Object.freeze({
+ export const selectors = Object.freeze({
   checkout: {
     content: '.checkout__content',
     loader: '.checkout__loader',

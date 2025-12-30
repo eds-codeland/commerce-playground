@@ -26,6 +26,9 @@ import {
  * @param {Element} main The container element
  */
 function buildHeroBlock(main) {
+  // If the author already placed a hero block (e.g. a table-based multi-slide hero),
+  // do not auto-build the synthetic hero from a picture + h1.
+  if (main.querySelector('.hero')) return;
   const h1 = main.querySelector('h1');
   const picture = main.querySelector('picture');
   // eslint-disable-next-line no-bitwise
