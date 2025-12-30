@@ -46,24 +46,27 @@
 }
 
 .hero .hero-slides {
-  display: flex;
+  position: relative;
   overflow: hidden;
-  transform: translate3d(0, 0, 0);
-  transition: transform 500ms ease;
   height: 40vw; /* responsive height similar to reference without vh */
 }
 
 .hero .hero-slides::-webkit-scrollbar { display: none; }
 
 .hero .hero-slide {
-  flex: 0 0 100%;
-  display: flex;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
   flex-direction: column;
   align-items: stretch;
   justify-content: center;
-  position: relative;
-  width: 100%;
   min-height: 420px; /* safe minimum height */
+}
+
+.hero .hero-slide[aria-hidden="false"] {
+  display: flex;
 }
 
 /* Card structure (Acerbis-like) */

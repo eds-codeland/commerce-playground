@@ -26,9 +26,6 @@ function showSlide(block, slideIndex = 0) {
       indicator.setAttribute('disabled', 'true');
     }
   });
-
-  const track = block.querySelector('.hero-slides');
-  if (track) track.style.transform = `translate3d(-${realSlideIndex * 100}%, 0, 0)`;
 }
 
 function bindEvents(block) {
@@ -63,6 +60,31 @@ function startAutoplay(block, interval = 6000) {
   }, interval);
 }
 
+function toAbsoluteUrl(url) {
+  if (!url) return url;
+  try {
+    return new URL(url, document.baseURI).toString();
+  } catch (e) {
+    return url;
+  }
+}
+
+function normalizeSrcsetToAbsolute(srcset) {
+  if (!srcset) return srcset;
+  return srcset
+    .split(',')
+    .map((candidate) => {
+      const trimmed = candidate.trim();
+      if (!trimmed) return '';
+      const parts = trimmed.split(/\s+/);
+      const url = parts.shift();
+      const descriptor = parts.join(' ');
+      return descriptor ? `${toAbsoluteUrl(url)} ${descriptor}` : toAbsoluteUrl(url);
+    })
+    .filter(Boolean)
+    .join(', ');
+}
+
 function cloneImgFrom(el) {
   if (!el) return null;
   const img = el.tagName === 'IMG' ? el : el.querySelector('img');
@@ -70,6 +92,20 @@ function cloneImgFrom(el) {
   const cloned = img.cloneNode(true);
   cloned.removeAttribute('width');
   cloned.removeAttribute('height');
+  // Carousels with translated tracks + overflow hidden can prevent lazy images
+  // from loading reliably. Ensure hero slide images are eagerly loaded.
+  cloned.loading = 'eager';
+  cloned.decoding = 'async';
+  cloned.removeAttribute('fetchpriority');
+
+  // Ensure media URLs resolve regardless of the current route (e.g. /, /category/foo).
+  if (cloned.getAttribute('src')) {
+    cloned.src = toAbsoluteUrl(cloned.getAttribute('src'));
+  }
+  if (cloned.getAttribute('srcset')) {
+    cloned.srcset = normalizeSrcsetToAbsolute(cloned.getAttribute('srcset'));
+  }
+
   return cloned;
 }
 
